@@ -493,18 +493,6 @@ local function stopFollow()
     WindUI:Notify({ Title = "跟随", Content = "已停止跟随", Duration = 3 })
 end
 
-local lockViewConn = RunService.RenderStepped:Connect(function()
-    if not LockViewEnabled then return end
-    local char = LocalPlayer.Character
-    if not char then return end
-    local root = char:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    local camDir = Camera.CFrame.LookVector
-    local flatDir = Vector3.new(camDir.X, 0, camDir.Z)
-    if flatDir.Magnitude > 0.001 then
-        root.CFrame = CFrame.new(root.Position, root.Position + flatDir)
-    end
-end)
 
 local function updateCameraMode()
     if ForceFirstPersonEnabled then
@@ -2099,6 +2087,15 @@ Tabs.SecondaryTab:Toggle({
     Value = false,
     Callback = function(state)
         LockViewEnabled = state
+        local char = LocalPlayer.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        if root then
+            local camDir = Camera.CFrame.LookVector
+            local flatDir = Vector3.new(camDir.X, 0, camDir.Z)
+            if flatDir.Magnitude > 0.001 then
+                root.CFrame = CFrame.new(root.Position, root.Position + flatDir)
+            end
+        end
         WindUI:Notify({ Title = "锁定视角", Content = state and "已开启" or "已关闭", Duration = 3 })
     end
 })
@@ -2271,6 +2268,70 @@ sliderReleaseActions["spinspeed"] = function(speed)
     WindUI:Notify({ Title = "旋转速度", Content = "已设置为：" .. speed .. " 度/秒", Duration = 2 })
 end
 
+local musicId = ""
+local musicSound = nil
+
+Tabs.MiscTab:Input({
+    Title = "输入音乐ID",
+    Placeholder = "输入音乐ID",
+    Callback = function(v)
+        musicId = v
+    end
+})
+
+Tabs.MiscTab:Button({
+    Title = "确认播放",
+    Callback = function()
+        local id = tostring(musicId):gsub("%D", "")
+        if id == "" then
+            WindUI:Notify({ Title = "音乐", Content = "请先输入音乐ID", Duration = 3 })
+            return
+        end
+        if musicSound and musicSound.SoundId == "rbxassetid://" .. id and musicSound.IsPaused then
+            musicSound:Resume()
+            WindUI:Notify({ Title = "音乐", Content = "继续播放: " .. id, Duration = 3 })
+            return
+        end
+        if musicSound then
+            musicSound:Destroy()
+            musicSound = nil
+        end
+        musicSound = Instance.new("Sound")
+        musicSound.SoundId = "rbxassetid://" .. id
+        musicSound.Volume = 1
+        musicSound.Looped = true
+        musicSound.Parent = LocalPlayer:WaitForChild("PlayerGui")
+        musicSound:Play()
+        WindUI:Notify({ Title = "音乐", Content = "正在播放: " .. id, Duration = 3 })
+    end
+})
+
+Tabs.MiscTab:Button({
+    Title = "取消播放",
+    Callback = function()
+        if musicSound then
+            musicSound:Stop()
+            musicSound:Destroy()
+            musicSound = nil
+            WindUI:Notify({ Title = "音乐", Content = "已取消播放", Duration = 3 })
+        else
+            WindUI:Notify({ Title = "音乐", Content = "当前没有播放的音乐", Duration = 3 })
+        end
+    end
+})
+
+Tabs.MiscTab:Button({
+    Title = "停止播放",
+    Callback = function()
+        if musicSound then
+            musicSound:Pause()
+            WindUI:Notify({ Title = "音乐", Content = "已暂停，点确认播放继续", Duration = 3 })
+        else
+            WindUI:Notify({ Title = "音乐", Content = "当前没有播放的音乐", Duration = 3 })
+        end
+    end
+})
+
 Tabs.MiscTab:Button({
     Title = "实体动作游泳",
     Desc = "先点击此按钮一次之后点击飞，然后再点击此按钮一次",
@@ -2427,12 +2488,12 @@ Tabs.GamesTab:Button({
 Tabs.GamesTab:Divider()
 
 Tabs.GamesTab:Paragraph({
-    Title = "恐脚本支持的服务器（31）：",
+    Title = "恐脚本支持的31种服务器：",
     Desc = "1.破坏者谜团2\n2.找到按钮\n3.盲射\n4.在超市生活一周\n5.亡命速递\n6.墨水游戏\n7.巨剑骑士\n8.踢出幸运方块\n9.吃吃世界\n10.DOORS\n11.力量传奇\n12.森林中的99夜\n13.键盘速度逃脱\n14.被遗弃\n15.变身躲猫猫\n16.能量爆炸幸运方块\n17.死铁轨\n18.自然灾害\n19.最强战场\n20.生存与杀手\n21.闪光\n22.鲨口求生\n23.圣地亚哥边境\n24.沉默的刺客\n25.通用血布娃娃战斗\n26.动物医院\n27.吃掉其他人来成长\n28.泰坦钓鱼\n29.南极探险队\n30.不要离开圈子\n31.合成一个核弹",
 })
 
 Tabs.GamesTab:Paragraph({
-    Title = "恐脚本--通用",
+    Title = "恐脚本",
     Desc = "作者：恐拜大帝",
     Image = "rbxassetid://113517588654522",
     ImageSize = 60,
