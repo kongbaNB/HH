@@ -1,7 +1,0 @@
-local ok, matched = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/kongbaNB/HH/refs/heads/main/1"))()
-end)
-
-if not ok or not matched then
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/kongbaNB/HH/refs/heads/main/2"))()
-end
