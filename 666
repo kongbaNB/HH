@@ -2089,8 +2089,12 @@ Tabs.SecondaryTab:Toggle({
     Callback = function(state)
         LockViewEnabled = state
         local char = LocalPlayer.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
         local root = char and char:FindFirstChild("HumanoidRootPart")
-        if root then
+        if hum then
+            hum.AutoRotate = not state
+        end
+        if state and root then
             local camDir = Camera.CFrame.LookVector
             local flatDir = Vector3.new(camDir.X, 0, camDir.Z)
             if flatDir.Magnitude > 0.001 then
@@ -2099,7 +2103,7 @@ Tabs.SecondaryTab:Toggle({
         end
         WindUI:Notify({ Title = "锁定视角", Content = state and "已开启" or "已关闭", Duration = 3 })
     end
-})
+}))
 
 local currentSmoothTarget = nil
 smoothDropdown = Tabs.SecondaryTab:Dropdown({
